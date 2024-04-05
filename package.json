@@ -1,20 +1,38 @@
 {
-  "name": "idb",
+  "name": "@vorker/idb",
   "version": "0.0.1",
-  "description": "",
+  "description": "开箱即用 IndexedDB 增删改查方法",
   "main": "dist/lib/index.js",
   "module": "dist/es/index.js",
   "scripts": {
     "build": "rollup --config",
     "build:watch": "rollup --config --watch"
   },
-  "author": "",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": "wvit",
   "license": "ISC",
+  "types": "./dist/lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wvit/IDB.git"
+  },
+  "keywords": [
+    "indexedDB"
+  ],
+  "bugs": {
+    "url": "https://github.com/wvit/IDB/issues"
+  },
+  "homepage": "https://github.com/wvit/IDB#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
     "rollup": "^4.13.2",
     "tslib": "^2.6.2"
+  },
+  "dependencies": {
+    "@vorker/utils": "0.0.4"
   }
 }

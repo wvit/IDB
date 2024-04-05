@@ -1,9 +1,9 @@
+import { getDate, getId, inspectTimer } from '@vorker/utils'
 import { storeHandle } from './storeHandle'
 import { objectHandle } from './objectHandle'
 import type { DBHandleOptions } from './interface'
 import type { StoreHandle } from './storeHandle'
 import type { ObjectHandle } from './objectHandle'
-import { getDate, getId, inspectTimer } from './utils'
 
 export interface Handle<T> extends StoreHandle<T> {}
 export interface Handle<T, K> extends ObjectHandle<K> {}
