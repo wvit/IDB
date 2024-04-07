@@ -25,7 +25,7 @@ export class IDB<T extends string[], K extends string[]> {
 
   /** 初始化IDBOpenDBRequest */
   private initDbRequest() {
-    const { name, storeNames, objectNames } = this.options
+    const { name, storeNames = [], objectNames = [] } = this.options
     this.dbRequest = indexedDB.open(name)
 
     /** 每次数据库version升级事件 */

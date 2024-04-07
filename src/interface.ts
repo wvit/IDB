@@ -5,9 +5,9 @@ export interface IDBOptions<T extends string[], K extends string[]> {
   /** 数据库名称 */
   name: string
   /** 需要创建的数据表 */
-  storeNames: T
+  storeNames?: T
   /** 需要创建的对象存储器 */
-  objectNames: K
+  objectNames?: K
 }
 
 /** 实例化数据表操作方法参数 */
