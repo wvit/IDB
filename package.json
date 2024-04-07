@@ -1,11 +1,12 @@
 {
   "name": "@vorker/idb",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "开箱即用 IndexedDB 增删改查方法",
   "main": "dist/lib/index.js",
   "module": "dist/es/index.js",
   "scripts": {
     "build": "rollup --config",
+    "pub": "npm run build && npm pub",
     "build:watch": "rollup --config --watch"
   },
   "publishConfig": {
