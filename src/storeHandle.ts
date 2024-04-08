@@ -125,7 +125,7 @@ export const storeHandle = () => {
           store.getAll().onsuccess = e => {
             const { result } = e.target as IDBRequest
             data.total = result.length
-            data.list = result
+            data.list = result.sort((a, b) => b.createTimestamp - a.createTimestamp)
             resolve(data)
           }
         })

@@ -69,9 +69,12 @@ export class Handle<
 
   /** 新建数据添加公共字段 */
   getCreateData(data) {
+    const time = Date.now()
+
     return {
       id: getId(),
-      createDate: getDate({ time: Date.now(), full: true }),
+      createDate: getDate({ time, full: true }),
+      createTimestamp: time,
       ...data,
     }
   }
