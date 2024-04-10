@@ -68,7 +68,7 @@ export class Handle<
   }
 
   /** 新建数据添加公共字段 */
-  getCreateData(data) {
+  getCreateData(data: Record<string, any>) {
     const time = Date.now()
 
     return {
@@ -89,7 +89,7 @@ export class Handle<
   }
 
   /** 获取数据表对象容器 */
-  async getObjectStore(storeName) {
+  async getObjectStore(storeName: (T | K)[number]) {
     if (!this.ready) {
       /** 等待检查数据表是否都准备完毕 */
       await inspectTimer(() => {
