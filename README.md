@@ -25,9 +25,9 @@ const db = new IDB({
 export const { storeHandles, objectHandles } = new Handle({ db })
 ```
 
-在您要使用的地方导入刚才的 storeHandles 方法
+在您要使用的地方导入刚才的 [storeHandles](https://wvit.github.io/IDB/interfaces/StoreHandle.html) 方法
 
-``` typescript
+```typescript
 // user.ts
 import { storeHandles } from './idb.ts'
 
@@ -54,12 +54,11 @@ const getUserList = () => {
   const { list } = await storeHandles.users.getPage({ pageNo: 1, pageSize: 10 })
   if (list.length) console.log('前10位用户', list)
 }
-
 ```
 
-亦或您想要存储大量数据，而使用类似 localStorage 的 storeHandles 方法
+亦或您想要存储大量数据，而使用类似 localStorage 的 [objectHandles](https://wvit.github.io/IDB/interfaces/ObjectHandle.html) 方法
 
-``` typescript
+```typescript
 // globalSetting.ts
 import { objectHandles } from './idb.ts'
 
@@ -75,5 +74,3 @@ const getThemeColor = () => {
   if (themeColor) console.log('获取主题色成功', themeColor)
 }
 ```
-
-更多方法请参考文档 [StoreHandle](https://wvit.github.io/IDB/interfaces/StoreHandle.html) [ObjectHandle](https://wvit.github.io/IDB/interfaces/ObjectHandle.html)
