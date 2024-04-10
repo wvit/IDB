@@ -8,6 +8,8 @@
 
 ### 使用
 
+新建一个模块文件，初始化 indexedDB
+
 ```typescript
 // idb.ts
 import { Handle, IDB } from '@vorker/idb'
@@ -21,8 +23,11 @@ const db = new IDB({
 
 /** 生成数据表的操作方法 */
 export const { storeHandles, objectHandles } = new Handle({ db })
+```
 
-////////////////////////////////////
+在您要使用的地方导入刚才的 storeHandles 方法
+
+``` typescript
 // user.ts
 import { storeHandles } from './idb.ts'
 
@@ -50,7 +55,11 @@ const getUserList = () => {
   if (list.length) console.log('前10位用户', list)
 }
 
-///////////////////////////////////////
+```
+
+亦或您想要存储大量数据，而使用类似 localStorage 的 storeHandles 方法
+
+``` typescript
 // globalSetting.ts
 import { objectHandles } from './idb.ts'
 
