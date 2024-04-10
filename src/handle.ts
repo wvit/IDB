@@ -73,7 +73,7 @@ export class Handle<
 
     return {
       id: getId(),
-      createDate: getDate({ time, full: true }),
+      createDate: getDate(time),
       createTimestamp: time,
       ...data,
     }
