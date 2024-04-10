@@ -1,13 +1,14 @@
 ## 开箱即用 IndexedDB 增删改查方法
 
-[查看文档](https://wvit.github.io/idb/)
+[查看文档](https://wvit.github.io/IDB/)
 
-[查看主页](https://github.com/wvit/vtils) 
+[查看主页](https://github.com/wvit/IDB)
 
 [下载](https://www.npmjs.com/package/@vorker/idb)
 
 ### 使用
-``` typescript
+
+```typescript
 // idb.ts
 import { Handle, IDB } from '@vorker/idb'
 
@@ -21,10 +22,9 @@ const db = new IDB({
 /** 生成数据表的操作方法 */
 export const { storeHandles, objectHandles } = new Handle({ db })
 
-///////////////////////////////
-
+////////////////////////////////////
 // user.ts
-import { storeHandles, objectHandles } from './idb.ts'
+import { storeHandles } from './idb.ts'
 
 /** 新建用户 */
 const createUser = () => {
@@ -49,5 +49,22 @@ const getUserList = () => {
   const { list } = await storeHandles.users.getPage({ pageNo: 1, pageSize: 10 })
   if (list.length) console.log('前10位用户', list)
 }
+
+///////////////////////////////////////
+// globalSetting.ts
+import { objectHandles } from './idb.ts'
+
+/** 设置主题颜色 */
+const setThemeColor = () => {
+  const status = await objectHandles.globalConfig.set({ themeColor: 'red' })
+  if (status) console.log('设置主题色成功')
+}
+
+/** 获取主题颜色 */
+const getThemeColor = () => {
+  const { themeColor } = await objectHandles.globalConfig.get(['themeColor'])
+  if (themeColor) console.log('获取主题色成功', themeColor)
+}
 ```
-更多方法请参考文档 [StoreHandle](https://wvit.github.io/idb/)
+
+更多方法请参考文档 [StoreHandle](https://wvit.github.io/IDB/interfaces/StoreHandle.html) [ObjectHandle](https://wvit.github.io/IDB/interfaces/ObjectHandle.html)
