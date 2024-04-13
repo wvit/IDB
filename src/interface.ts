@@ -17,15 +17,17 @@ export interface StoreHandle extends CommonHandle {
   /** 添加数据 */
   create: (data: any) => Promise<boolean>
   /** 更新数据 */
-  update: (data: any) => Promise<boolean>
+  update: (data: UpdateData) => Promise<boolean>
 
   /** 批量添加数据 */
-  batchCreate: (data: any[]) => Promise<boolean>
+  batchCreate: <T>(data: T[]) => Promise<T[]>
   /** 批量更新数据 */
-  batchUpdate: (data: any[]) => Promise<boolean>
+  batchUpdate: <T extends UpdateData>(data: T[]) => Promise<T[]>
 
   /** 删除数据 */
   delete: (id: string) => Promise<boolean>
+  /** 批量删除数据 */
+  batchDelete: <T extends string>(ids: T[]) => Promise<Record<T, boolean>>
   /** 删除所有数据 */
   deleteAll: () => Promise<boolean>
 
@@ -67,7 +69,14 @@ export type DBHandleOptions<T extends string[], K extends string[]> = {
   db: IDB<T, K>
 }
 
-/** 查询 */
+/** 更新数据所需参数 */
+export type UpdateData = {
+  /** 需要更新数据项 id */
+  id: string
+  [key: string]: any
+}
+
+/** 查询cams */
 export type Query = {
   /** 页码 */
   pageNo: number

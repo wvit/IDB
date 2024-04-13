@@ -29,6 +29,7 @@ export const storeHandle = () => {
             batchUpdate: data => this.batchCreateUpdate(name, data),
 
             delete: id => this.delete(name, id),
+            batchDelete: ids => this.batchDelete(name, ids),
             deleteAll: () => this.deleteAll(name),
 
             detail: id => this.getDetail(name, id),
@@ -45,9 +46,10 @@ export const storeHandle = () => {
       /** 向数据表新增数据，如果数据id存在，就更改数据 */
       private async createUpdate(storeName, data, batchCall?) {
         const store = await this.getObjectStore(storeName)
-        const findData = store.get(data.id)
+        const status = await new Promise<boolean>(resolve => {
+          const findData = store.get(data.id)
 
-        return new Promise<boolean>(resolve => {
+          findData.onerror = () => resolve(false)
           findData.onsuccess = () => {
             let request = null as unknown as IDBRequest<IDBValidKey>
 
@@ -57,6 +59,7 @@ export const storeHandle = () => {
               request = store.add(this.getCreateData(data))
             }
 
+            request.onerror = () => resolve(false)
             request.onsuccess = () => {
               if (!batchCall) {
                 this.runChangeEvents(storeName, {
@@ -68,12 +71,17 @@ export const storeHandle = () => {
             }
           }
         })
+
+        return status
       }
 
       /** 批量新建或更新数据 */
       private async batchCreateUpdate(storeName, data) {
+        const successResults: any[] = []
+
         for (const item of data) {
-          await this.createUpdate(storeName, item, true)
+          const status = await this.createUpdate(storeName, item, true)
+          if (status) successResults.push(item)
         }
 
         this.runChangeEvents(storeName, {
@@ -81,54 +89,95 @@ export const storeHandle = () => {
           changeData: data,
         })
 
-        return true
+        return successResults
       }
 
       /** 删除数据表中的数据 */
-      private async delete(storeName, id) {
+      private async delete(storeName, id, batchCall?) {
         const store = await this.getObjectStore(storeName)
+        const status = await new Promise<boolean>(resolve => {
+          const request = store.delete(id)
 
-        await store.delete(id)
-        this.runChangeEvents(storeName, { action: 'delete', changeData: id })
+          request.onerror = () => resolve(false)
+          request.onsuccess = () => {
+            if (!batchCall) {
+              this.runChangeEvents(storeName, {
+                action: 'delete',
+                changeData: id,
+              })
+            }
+            resolve(true)
+          }
+        })
 
-        return true
+        return status
+      }
+
+      /** 批量删除数据 */
+      private async batchDelete(storeName, ids) {
+        const results = {} as Record<string, boolean>
+
+        for (const item of ids) {
+          const status = await this.delete(storeName, item, true)
+          results[item] = status
+        }
+
+        this.runChangeEvents(storeName, {
+          action: 'batchDelate',
+          changeData: ids,
+        })
+
+        return results
       }
 
       /** 删除数据表中的所有数据 */
       private async deleteAll(storeName) {
         const store = await this.getObjectStore(storeName)
+        const status = await new Promise<boolean>(resolve => {
+          const request = store.clear()
 
-        await store.clear()
+          request.onerror = () => resolve(false)
+          request.onsuccess = () => resolve(true)
+        })
+
         this.runChangeEvents(storeName, { action: 'deleteAll' })
 
-        return true
+        return status
       }
 
       /** 获取数据项详情数据 */
       private async getDetail(storeName, id?) {
         const store = await this.getObjectStore(storeName)
-        const findData = store.get(id)
+        const detail = await new Promise<any>(resolve => {
+          const findData = store.get(id)
 
-        return new Promise<any>(resolve => {
-          findData.onsuccess = () => {
-            resolve(findData.result || null)
-          }
+          findData.onerror = () => resolve(null)
+          findData.onsuccess = () => resolve(findData.result)
         })
+
+        return detail
       }
 
       /** 获取所有数据 */
       private async getAll(storeName) {
         const store = await this.getObjectStore(storeName)
         const data: StoreAllValue = { total: 0, list: [] }
+        const listData = await new Promise<StoreAllValue>(resolve => {
+          const allData = store.getAll()
 
-        return await new Promise<StoreAllValue>(resolve => {
-          store.getAll().onsuccess = e => {
+          allData.onerror = () => resolve(data)
+          allData.onsuccess = e => {
             const { result } = e.target as IDBRequest
+
             data.total = result.length
-            data.list = result.sort((a, b) => b.createTimestamp - a.createTimestamp)
+            data.list = result.sort(
+              (a, b) => b.createTimestamp - a.createTimestamp
+            )
             resolve(data)
           }
         })
+
+        return listData
       }
 
       /** 获取分页数据 */
@@ -140,41 +189,50 @@ export const storeHandle = () => {
           (pageNo - 1) * pageSize,
           pageNo * pageSize,
         ]
-        const data: PagingValue = { pages: 0, total: 0, list: [] }
-        let advanced = false
-        let index = 0
+        const pageData = await new Promise<Omit<PagingValue, 'list'>>(
+          resolve => {
+            const countData = store.count()
 
-        await new Promise<void>(resolve => {
-          store.count().onsuccess = e => {
-            const { result } = e.target as IDBRequest
-            data.pages = Math.ceil(result / pageSize)
-            data.total = result
-            resolve()
+            countData.onerror = () => resolve({ pages: 0, total: 0 })
+            countData.onsuccess = e => {
+              const { result } = e.target as IDBRequest
+              resolve({
+                pages: Math.ceil(result / pageSize),
+                total: result,
+              })
+            }
           }
-        })
-
-        return new Promise<PagingValue>(resolve => {
-          const queryStore = indexName === null ? store : store.index(indexName)
-
+        )
+        const listData = await new Promise<PagingValue['list']>(resolve => {
+          const storeIndex = indexName === null ? store : store.index(indexName)
           /** 分页数据只能通过 游标 的方法获取 */
-          queryStore.openCursor(null, direction).onsuccess = e => {
+          const queryCursor = storeIndex.openCursor(null, direction)
+          /** 是否已跳过部分记录 */
+          let advanced = false
+          let index = 0
+          let list: any[] = []
+
+          queryCursor.onerror = () => resolve(list)
+          queryCursor.onsuccess = e => {
             const { result } = e.target as IDBRequest
 
             if (!advanced && startPage) {
               advanced = true
+              /** 跳过指定数量的记录 */
               result.advance(startPage)
             } else if (index < endPage && result) {
-              const { value, key } = result
-              if (`${key}`.indexOf(keyword) !== -1) {
+              if (`${result.key}`.indexOf(keyword) !== -1) {
                 index++
-                data.list.push(value)
+                list.push(result.value)
               }
               result.continue()
             } else {
-              resolve(data)
+              resolve(list)
             }
           }
         })
+
+        return { ...pageData, list: listData }
       }
     } as typeof Handle
   }
