@@ -32,7 +32,8 @@ export const storeHandle = () => {
             batchDelete: ids => this.batchDelete(name, ids),
             deleteAll: () => this.deleteAll(name),
 
-            detail: id => this.getDetail(name, id),
+            getId: id => this.getId(name, id),
+            getIds: id => this.getIds(name, id),
             getPage: query => this.getPage(name, { query }),
             getAll: () => this.getAll(name),
 
@@ -145,8 +146,8 @@ export const storeHandle = () => {
         return status
       }
 
-      /** 获取数据项详情数据 */
-      private async getDetail(storeName, id?) {
+      /** 获取单条数据 */
+      private async getId(storeName, id) {
         const store = await this.getObjectStore(storeName)
         const detail = await new Promise<any>(resolve => {
           const findData = store.get(id)
@@ -156,6 +157,18 @@ export const storeHandle = () => {
         })
 
         return detail
+      }
+
+      /** 获取多条数据 */
+      private async getIds(storeName, ids) {
+        const results: any[] = []
+
+        for (const item of ids) {
+          const result = await this.getId(storeName, item)
+          results.push(result)
+        }
+
+        return results
       }
 
       /** 获取所有数据 */

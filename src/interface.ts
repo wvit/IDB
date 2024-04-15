@@ -31,8 +31,10 @@ export interface StoreHandle extends CommonHandle {
   /** 删除所有数据 */
   deleteAll: () => Promise<boolean>
 
-  /** 获取数据详情 */
-  detail: (id: string) => Promise<any>
+  /** 获取单条数据详情 */
+  getId: (id: string) => Promise<any>
+  /** 获取多条数据详情 */
+  getIds: (ids: string[]) => Promise<any[]>
   /** 获取查询条件的分页数据 */
   getPage: (query: Query) => Promise<PagingValue>
   /** 获取查询条件的所有数据 */
